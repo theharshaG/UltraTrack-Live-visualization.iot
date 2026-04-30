@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Ultrasonic Dashboard</title>
+
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <style>
+        body {
+            background: #111;
+            color: white;
+            text-align: center;
+            font-family: Arial;
+        }
+
+        h1 {
+            color: #00ffcc;
+        }
+
+        .value {
+            font-size: 40px;
+            margin: 20px;
+        }
+
+        canvas {
+            width: 80% !important;
+            max-width: 600px;
+        }
+    </style>
+</head>
+
+<body>
+
+<h1>📏 Distance Monitor</h1>
+
+<div class="value" id="distance">-- cm</div>
+
+<canvas id="chart"></canvas>
+
+<script>
+
+let chart;
+
+function loadData() {
+    fetch("/distance")
+    .then(res => res.json())
+    .then(data => {
+
+        let values = [];
+        let labels = [];
+
+        data.forEach((item, index) => {
+            values.push(item.value);
+            labels.push(index + 1);
+        });
+
+        // 🔹 Latest value
+        if (values.length > 0) {
+            document.getElementById("distance").innerText =
+                values[values.length - 1] + " cm";
+        }
+
+        updateChart(labels, values);
+    });
+}
+
+function updateChart(labels, values) {
+
+    if (chart) {
+        chart.destroy();
+    }
+
+    const ctx = document.getElementById("chart").getContext("2d");
+
+    chart = new Chart(ctx, {
+        type: "line",
+        data: {
+            labels: labels,
+            datasets: [
+                {
+                    label: "Distance (cm)",
+                    data: values,
+                    borderWidth: 2
+                }
+            ]
+        }
+    });
+}
+
+// refresh every 3 sec
+setInterval(loadData, 3000);
+
+loadData();
+
+</script>
+
+</body>
+</html>
